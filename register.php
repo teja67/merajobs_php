@@ -61,7 +61,7 @@ if(isset($_POST['name']))
                 <form action="" method="post" autocomplete="off">
                     <div class="form-group">
                         <label for="name"><i class="fa fa-user"></i></label>
-                        <input type="text" name="name" id="name" placeholder="Name"/>
+                        <input type="text" name="name" id="name" placeholder="Name" autofocus/>
                     </div>
                     <div class="form-group">
                         <label for="email"><i class="fa fa-envelope"></i></label>
@@ -84,14 +84,6 @@ if(isset($_POST['name']))
                         <a href="/merajobs/login.php" class="badge bg-danger" style="margin-left: 5%">Already registered ?</a>
                     </div>
                 </form>
-                <!-- <div class="social-login">
-                    <span class="social-label">Or login with</span>
-                    <ul class="socials">
-                        <li><a href="#"><i class="display-flex-center fa fa-facebook"></i></a></li>
-                        <li><a href="#"><i class="display-flex-center fa fa-twitter"></i></a></li>
-                        <li><a href="#"><i class="display-flex-center fa fa-google"></i></a></li>
-                    </ul>
-                </div> -->
             </div>
             <div class="signin-image">
                 <figure><img src="img/signup-image.jpg" alt="sing up image"></figure>

@@ -8,7 +8,25 @@ if(isset($_SESSION['user_id']))
     header('Location: /merajobs/login.php');
 }
 
-$user_id=$_SESSION['user_id'];
+if (isset($_GET['skill_id'])) {
+    $skill_id = $_GET['skill_id'];
+
+    $skill_data=$conn->query("SELECT * FROM `skill` WHERE `id`='".$skill_id."' ");
+    $fetch_silldata=$skill_data->fetch();
+    $state_id=$fetch_silldata['state'];
+    $city_id=$fetch_silldata['city'];
+    $area_id=$fetch_silldata['area'];
+    $cat_id=$fetch_silldata['job_category'];
+    $type_id=$fetch_silldata['job_type'];
+    $job_desc=$fetch_silldata['job_desc'];
+    $salary=$fetch_silldata['salary'];
+    $vacancy=$fetch_silldata['vacancy'];
+    $contact=$fetch_silldata['contact'];
+
+}
+
+
+
 
 if(isset($_POST['state']))
 {
@@ -22,9 +40,19 @@ if(isset($_POST['state']))
     $contact=$_POST['contact'];
     $vacancy=$_POST['vacancy'];
 
-    $conn->query("INSERT INTO `skill`(`state`,`city`,`area`,`job_type`,`job_category`,`job_desc`,`salary`,`vacancy`,`contact`,`user_id`) VALUES('".$state."','".$city."','".$area."','".$job_type."','".$job_category."','".$job_desc."','".$salary."','".$vacancy."','".$contact."','".$user_id."')");
-    
-    header('Location:/merajobs/skill.php');
+    $conn->query("UPDATE `skill` SET 
+    `state` = '".$state."', 
+    `city` = '".$city."', 
+    `area` = '".$area."', 
+    `job_type` = '".$job_type."', 
+    `job_category` = '".$job_category."', 
+    `job_desc` = '".$job_desc."', 
+    `salary` = '".$salary."', 
+    `vacancy` = '".$vacancy."', 
+    `contact` = '".$contact."' 
+    WHERE `id` = '".$skill_id."'");
+
+    header('Location:/merajobs/your_skills.php');
     exit;
 }
 
@@ -37,7 +65,7 @@ if(isset($_POST['state']))
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="" name="keywords">
     <meta content="" name="description">
-    <title>Skill</title>
+    <title>Edit Skill</title>
     <!-- Favicon -->
     <link href="img/favicon.icon" rel="icon">
 
@@ -65,7 +93,7 @@ if(isset($_POST['state']))
     
     <div class="container-xxl py-5">
     <div class="container">
-        <h1 class="text-center mb-5 wow fadeInUp" data-wow-delay="0.1s">Skill</h1>
+        <h1 class="text-center mb-5 wow fadeInUp" data-wow-delay="0.1s">Edit Skill</h1>
         <div class="row g-3">
 
             <form action="" method="post" autocomplete="off">
@@ -81,7 +109,7 @@ if(isset($_POST['state']))
                                     while($data=$state_data->fetch())
                                     {
                                         ?>
-                                            <option value="<?=$data['id']?>"><?=$data['name']?></option>
+                                            <option value="<?=$data['id']?>"<?=($state_id== $data['id'])?'selected' : ''?>><?=$data['name']?></option>
                                         <?php
                                     }
                                 ?>
@@ -100,7 +128,7 @@ if(isset($_POST['state']))
                                     while($data=$city_data->fetch())
                                     {
                                         ?>
-                                            <option value="<?=$data['id']?>"><?=$data['name']?></option>
+                                            <option value="<?=$data['id']?>"<?=($city_id== $data['id'])?'selected' : ''?>><?=$data['name']?></option>
                                         <?php
                                     }
                                 ?>
@@ -119,7 +147,7 @@ if(isset($_POST['state']))
                                     while($data=$area_data->fetch())
                                     {
                                         ?>
-                                            <option value="<?=$data['id']?>"><?=$data['area']?></option>
+                                            <option value="<?=$data['id']?>" <?=($area_id== $data['id'])?'selected' : ''?>><?=$data['area']?></option>
                                         <?php
                                     }
                                 ?>
@@ -133,8 +161,8 @@ if(isset($_POST['state']))
                     <div class="col-md-4 col-5">
                         <select name="job_type" id="job_type" class="form-control">
                             <option value="">Select Job Type</option>
-                            <option value="1">Part Time</option>
-                            <option value="2">Full Time</option>
+                            <option value="1"<?=($trype_id== '1')?'selected' : ''?>>Part Time</option>
+                            <option value="2"<?=($type_id== '2')?'selected' : ''?>>Full Time</option>
                         </select>
                     </div>
                 </div>
@@ -150,7 +178,7 @@ if(isset($_POST['state']))
                                 while($data=$cate_data->fetch())
                                 {
                                     ?>
-                                        <option value="<?=$data['id']?>"><?=$data['name']?></option>
+                                        <option value="<?=$data['id']?>"<?=($cat_id== $data['id'])?'selected' : ''?>><?=$data['name']?></option>
                                     <?php
                                 }
                             ?>
@@ -162,7 +190,7 @@ if(isset($_POST['state']))
                         <label for="job_desc">Job Description<span class="text-danger">*</span></label>
                     </div>
                     <div class="col-md-4 col-5">
-                        <textarea name="job_desc" id="job_desc" cols="50" rows="5"></textarea>
+                        <textarea name="job_desc" id="job_desc" cols="50" rows="5"><?=$job_desc?></textarea>
                     </div>
                 </div>
                 <div class="d-flex justify-content-center align-items-center mt-3">
@@ -170,7 +198,7 @@ if(isset($_POST['state']))
                         <label for="salary">Salary<span class="text-danger">*</span></label>
                     </div>
                     <div class="col-md-4 col-5">
-                        <input type="text" name="salary" id="salary" class="form-control" placeholder="Enter Your Salary">
+                        <input type="text" name="salary" id="salary" class="form-control" placeholder="Enter Your Salary" value="<?=$salary?>">
                     </div>
                 </div>
                 <div class="d-flex justify-content-center align-items-center mt-3">
@@ -178,7 +206,7 @@ if(isset($_POST['state']))
                         <label for="contact">Contact<span class="text-danger">*</span></label>
                     </div>
                     <div class="col-md-4 col-5">
-                        <input type="text" name="contact" id="contact" class="form-control" placeholder="Enter Your Contact">
+                        <input type="text" name="contact" id="contact" class="form-control" placeholder="Enter Your Contact" value="<?=$contact?>">
                     </div>
                 </div>
                 <div class="d-flex justify-content-center align-items-center mt-3">
@@ -186,7 +214,7 @@ if(isset($_POST['state']))
                         <label for="vacancy">Vacancy</label>
                     </div>
                     <div class="col-md-4 col-5">
-                        <input type="text" name="vacancy" id="vacancy" class="form-control" placeholder="Enter Vacancy">
+                        <input type="text" name="vacancy" id="vacancy" class="form-control" placeholder="Enter Vacancy" value="<?=$vacancy?>">
                     </div>
                 </div>
                 <div class="d-flex justify-content-center align-items-center mt-4">
@@ -226,23 +254,23 @@ if(isset($_POST['state']))
         <script>
                var csrfToken = "{{ csrf_token }}";
 
-function get_state(val)
-{
-     $.ajax({
-        type:'POST',
-        url: 'get_city',
-        headers: {
-            'X-CSRFToken': csrfToken
-        },
-        data: {
-            city_id: val
-        },
-        success: function(data) 
-        {
+// function get_state(val)
+// {
+//      $.ajax({
+//         type:'POST',
+//         url: 'get_city',
+//         headers: {
+//             'X-CSRFToken': csrfToken
+//         },
+//         data: {
+//             city_id: val
+//         },
+//         success: function(data) 
+//         {
            
-        }
-    });
-}
+//         }
+//     });
+// }
         </script>
         
 </body>

@@ -1,15 +1,14 @@
 <?php
-session_start();
 include 'database.php';
-$userid=isset($_SESSION['user_id']);
-if(isset($_POST['user_id']))
+session_start();
+
+if(isset($_SESSION['user_id']))
 {
-    session_destroy();
-    header('Location: /merajobs/login.php');
-    exit;
+    $userid=$_SESSION['user_id'];
 }
 
-if(isset($_POST['state']))
+
+if(!empty($_POST['state']) && !empty($_POST['city']) && !empty($_POST['area']))
 {
     $state_id=$_POST['state'];
     $city_id=$_POST['city'];
@@ -17,12 +16,23 @@ if(isset($_POST['state']))
 
     $job_data=$conn->query("SELECT * FROM `skill` WHERE `state`='".$state_id."' and `city`='".$city_id."' and `area`='".$area_id."' ");
 }
+else if(!empty($_POST['state']) && empty($_POST['city']) && empty($_POST['area']))
+{
+    $state_id=$_POST['state'];
+    
+    $job_data=$conn->query("SELECT * FROM `skill` WHERE `state`='".$state_id."'");
+}
+else if(!empty($_POST['state']) && !empty($_POST['city']) && empty($_POST['area']))
+{
+    $state_id=$_POST['state'];
+    $city_id=$_POST['city'];
+    
+    $job_data=$conn->query("SELECT * FROM `skill` WHERE `state`='".$state_id."' and `city`='".$city_id."' ");
+}
 else
 {
     $job_data=$conn->query("SELECT * FROM skill");
 }
-
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -71,36 +81,40 @@ else
                                     $state_data=$conn->query("SELECT * FROM `state`");
                                     while($data=$state_data->fetch())
                                     {
+                                        $selected = (isset($_POST['state']) && $_POST['state'] == $data['id']) ? 'selected' : '';
                                         ?>
-                                            <option value="<?=$data['id']?>"><?=$data['name']?></option>
+                                            <option value="<?=$data['id']?>"<?= $selected ?>><?=$data['name']?></option>
                                         <?php
                                     }
                                 ?>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <select class="form-select border-0" name="city" id="city" required>
+                            <select class="form-select border-0" name="city" id="city">
                                 <option value="">Select City</option>
                                 <?php
                                     $city_data=$conn->query("SELECT * FROM `city`");
                                     while($data=$city_data->fetch())
                                     {
+                                        $selected = (isset($_POST['city']) && $_POST['city'] == $data['id']) ? 'selected' : '';
+
                                         ?>
-                                            <option value="<?=$data['id']?>"><?=$data['name']?></option>
+                                            <option value="<?=$data['id']?>"<?= $selected ?>><?=$data['name']?></option>
                                         <?php
                                     }
                                 ?>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <select class="form-select border-0" name="area" id="area" required>
+                            <select class="form-select border-0" name="area" id="area">
                                 <option value="">Select Area</option>
                                 <?php
                                     $area_data=$conn->query("SELECT * FROM `area`");
                                     while($data=$area_data->fetch())
                                     {
+                                        $selected = (isset($_POST['area']) && $_POST['area'] == $data['id']) ? 'selected' : '';
                                         ?>
-                                            <option value="<?=$data['id']?>"><?=$data['area']?></option>
+                                            <option value="<?=$data['id']?>"<?= $selected ?>><?=$data['area']?></option>
                                         <?php
                                     }
                                 ?>
@@ -190,8 +204,7 @@ else
                 <div class="tab-class text-center wow fadeInUp" data-wow-delay="0.3s">
                     <div class="tab-content">
                         <div id="tab-1" class="tab-pane fade show p-0 active">
-                            <div class="job-item p-4 mb-4">
-                                <div class="row g-4">
+                            
                                 <?php
                                     if($job_data->rowCount() > 0)
                                     {
@@ -203,6 +216,7 @@ else
                                         foreach($jobdata as $get_data)
                                         {
                                                 
+                                            $id=$get_data['id'];
                                             $user_id=$get_data['user_id'];
                                             $job_id=$get_data['job_type'];
                                             $category_id=$get_data['job_category'];
@@ -223,31 +237,39 @@ else
                                             $area_data=$conn->query("SELECT area FROM `area` WHERE id='".$area_id."' ");
                                             $areadata=$area_data->fetch();
                                             ?>
-                                            <div class="col-sm-12 col-md-8 d-flex align-items-center">
-                                                <img class="flex-shrink-0 img-fluid border rounded" src="img/com-logo-1.jpg" alt="" style="width: 80px; height: 80px;">
-                                                <div class="text-start ps-4">
-                                                    <h5 class="mb-3"><?=$cat_data['name']?></h5>
-                                                    <span class="text-truncate me-3"><i class="fa fa-map-marker-alt text-primary me-2"></i><?=$areadata['area']?>,<?=$citydata['name']?></span>
-                                                    <span class="text-truncate me-3"><i class="far fa-clock text-primary me-2"></i><?=$job_type?></span>
-                                                    <span class="text-truncate me-0"><i class="far fa-money-bill-alt text-primary me-2"></i><?=$get_data['vacancy']?></span>
+                                            <div class="job-item p-4 mb-4">
+                                                <div class="row g-4">
+                                                    <div class="col-sm-12 col-md-8 d-flex align-items-center">
+                                                        <!-- <img class="flex-shrink-0 img-fluid border rounded" src="img/com-logo-1.jpg" alt="" style="width: 80px; height: 80px;"> -->
+                                                        <div class="text-start ps-4">
+                                                            <h5 class="mb-3"><?=$cat_data['name']?></h5>
+                                                            <span class="text-truncate me-3"><i class="fa fa-map-marker-alt text-primary me-2"></i><?=$areadata['area']?>,<?=$citydata['name']?></span>
+                                                            <span class="text-truncate me-3"><i class="far fa-clock text-primary me-2"></i><?=$job_type?></span>
+                                                            <span class="text-truncate me-0"><i class="far fa-money-bill-alt text-primary me-2"></i><?=$get_data['vacancy']?></span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-sm-12 col-md-4 d-flex flex-column align-items-start align-items-md-end justify-content-center">
+                                                        <div class="d-flex mb-3">
+                                                            <?php
+                                                            if($user_id==$userid)
+                                                            {
+                                                                ?>
+                                                                    <a class="btn btn-primary" target="blank" href="/merajobs/job_detail.php?job_id=<?=$id?>">Your Post</a>
+                                                                <?php
+                                                            }else if($userid==0){
+                                                                ?>
+                                                                    <a class="btn btn-primary" target="blank" href="/merajobs/login.php">Apply Now</a>
+                                                                <?php
+                                                            }else{
+                                                                ?>
+                                                                    <a class="btn btn-primary" target="blank" href="/merajobs/job_detail.php?job_id=<?=$id?>">Apply Now</a>
+                                                                <?php
+                                                            }
+                                                            ?>
+                                                        </div>
+                                                        <small class="text-truncate"><i class="far fa-calendar-alt text-primary me-2"></i>Date Posted: <?=$formattedDate?></small>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="col-sm-12 col-md-4 d-flex flex-column align-items-start align-items-md-end justify-content-center">
-                                                <div class="d-flex mb-3">
-                                                    <?php
-                                                    if($user_id==$userid)
-                                                    {
-                                                        ?>
-                                                            <a class="btn btn-primary" href="">Your Post</a>
-                                                        <?php
-                                                    }else{
-                                                        ?>
-                                                            <a class="btn btn-primary" href="">Apply Now</a>
-                                                        <?php
-                                                    }
-                                                    ?>
-                                                </div>
-                                                <small class="text-truncate"><i class="far fa-calendar-alt text-primary me-2"></i>Date Posted: <?=$formattedDate?></small>
                                             </div>
                                             <?php
                                         }
@@ -263,8 +285,7 @@ else
 
                                         
                                    
-                                </div>
-                            </div>
+                                
                             <!-- <a class="btn btn-primary py-3 px-5" href="">Browse More Jobs</a> -->
                         </div>
                     </div>
@@ -294,25 +315,6 @@ else
     
         <!-- Template Javascript -->
         <script src="./js/main.js"></script>
-        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-
-<script>
-
-function logout(val)
-{
-    $.ajax({
-           type:'POST',
-           url: '',
-           data: {
-               user_id: val
-           },
-           success: function(data) 
-           {
-            //    alert(data);
-           }
-       });
-}
-</script>
-        
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>        
 </body>
 </html>

@@ -1,6 +1,12 @@
 <?php
 session_start();
 include 'database.php';
+if(isset($_SESSION['user_id']))
+{
+    $userid=$_SESSION['user_id'];
+}else{
+    header('Location: /merajobs/login.php');
+}
 
 $user_id=$_SESSION['user_id'];
 $get_data=$conn->query("SELECT * FROM register WHERE id='".$user_id."'");
@@ -8,7 +14,28 @@ $fetch_data=$get_data->fetch();
 $id=$fetch_data['id'];
 $name=$fetch_data['name'];
 $ph_no=$fetch_data['phone_number'];
+$profile_pic=$fetch_data['profile_pic'];
 $email=$fetch_data['email'];
+
+    if (isset($_POST['user_id']) && isset($_FILES['pic'])) {
+        $user_id = $_POST['user_id'];
+
+        // Get the image information
+        $file_name = $_FILES['pic']['name'];
+        $file_size = $_FILES['pic']['size'];
+        $file_tmp = $_FILES['pic']['tmp_name'];
+        $file_type = $_FILES['pic']['type'];
+
+        $target_path = "img/" . $file_name;
+        move_uploaded_file($file_tmp, $target_path);
+
+        $conn->query("UPDATE `register` SET `profile_pic`='".$file_name."' WHERE id='".$user_id."'");
+
+        // Send a response back to the JavaScript
+        echo "0";
+        exit;
+    }
+
 
 ?>
 
@@ -58,8 +85,11 @@ $email=$fetch_data['email'];
                       <label class="-label" for="">
                           <span> <i class="far fa-edit"></i> Edit Photo</span>
                       </label>
-                  <img src="./img/user.JPG" alt="" class="avatar xl rounded-circle img-thumbnail shadow-sm">
-              </div>
+                      <?php
+                        $image=(is_null($profile_pic))?'user.JPG':$profile_pic;
+                      ?>
+                      <img src="./img/<?=$image?>" alt=""  class="avatar xl rounded-circle img-thumbnail shadow-sm">
+                </div>
 
                 <h5 class="mt-4"><?=$name?></h5>
               </div>
@@ -87,18 +117,6 @@ $email=$fetch_data['email'];
                       <p class="text-muted"><?=$ph_no?></p>
                     </div>
                   </div>
-                  <!-- <h6>Projects</h6>
-                  <hr class="mt-0 mb-4">
-                  <div class="row pt-1">
-                    <div class="col-6 mb-3">
-                      <h6>Recent</h6>
-                      <p class="text-muted">Lorem ipsum</p>
-                    </div>
-                    <div class="col-6 mb-3">
-                      <h6>Most Viewed</h6>
-                      <p class="text-muted">Dolor sit amet</p>
-                    </div>
-                  </div> -->
                 </div>
               </div>
             </div>
@@ -118,16 +136,16 @@ $email=$fetch_data['email'];
         </div>
         <div class="modal-body">
           <form id="upload-form" method="post" autocomplete="off" enctype="multipart/form-data">
-            <input type="file" name="pic" id="pic" class="form-control" accept="image/jpeg, image/png">
+            <input type="file" name="pic" id="pic" class="form-control" accept="image/jpeg, image/png" >
             <input type="hidden" name="id" class="form-control" value="<?=$id?>">
           
             <div class="mt-5">
-              <img id="display-img" src="#" style="max-width: 100%; max-height: 200px;display: none;margin-left: 50px;" class="pl-5"/>
+              <img id="display-img" src="#" style="max-width: 100%; max-height: 200px;display: none;margin-left: 50px;"  class="pl-5"/>
             </div>
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-secondary close" data-bs-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-primary" id="img-btn" onclick="update_image(<?=$id?>)">Submit</button>
         </div>
       </div>
@@ -157,18 +175,22 @@ $email=$fetch_data['email'];
         <!-- Template Javascript -->
         <script src="./js/main.js"></script>
         <script src="jquery-3.6.4.min.js"></script>
-<script>
-document.getElementById('pic').addEventListener('change', function() {
-    const imgInput = document.getElementById("pic");
-    const displayImg = document.getElementById("display-img");
+        <script src="./toastr-master/toastr.js"></script>
+        <link href="./toastr-master/toastr.css" rel="stylesheet" type="text/css" />
 
-    if (imgInput.files && imgInput.files[0]) {
-        displayImg.style.display = 'block';
-        displayImg.src = URL.createObjectURL(imgInput.files[0]);
-    } else {
-        displayImg.src = "";
-    }
-});
+
+<script>
+  document.getElementById('pic').addEventListener('change', function() {
+      const imgInput = document.getElementById("pic");
+      const displayImg = document.getElementById("display-img");
+
+      if (imgInput.files && imgInput.files[0]) {
+          displayImg.style.display = 'block';
+          displayImg.src = URL.createObjectURL(imgInput.files[0]);
+      } else {
+          displayImg.src = "";
+      }
+  });
    
 
 
@@ -187,7 +209,7 @@ function update_image(val)
 
     $.ajax({
         type: 'post',
-        url: 'update_profile',
+        url: '',
         headers: {
               'X-CSRFToken': csrfToken
           },
@@ -195,7 +217,16 @@ function update_image(val)
         processData: false,
         contentType: false,
         success: function (data) {
-            
+            if(data==0)
+            {
+              $('.close').click();
+              window.location.href = "/merajobs/profile_settings.php";
+		          toastr.success('Profile Picture Uploaded');
+            }else if(data==1){
+              $('.close').click();
+            }else{
+              $('.close').click();
+            }
         }
     });
 }

@@ -1,4 +1,5 @@
 <?php
+session_start();
 include 'database.php';
 
 if(isset($_POST['username']))
@@ -21,7 +22,6 @@ if(isset($_POST['username']))
         $is_admin = $result['is_admin'];
 
         // You can now use $user_id and $user_name as needed
-        session_start();
         $_SESSION['user_id'] = $user_id;
         $_SESSION['user_name'] = $user_name;
         $_SESSION['is_admin'] = $is_admin;
@@ -29,21 +29,9 @@ if(isset($_POST['username']))
         header('Location:/merajobs/index.php');
         exit;
     } else {
-        header('Location:/merajobs/login.php');
-        echo "Invalid credentials!";
+        header('Location:/merajobs/login.php'); 
     }
-
     
-    // $fetch_data=$stmt->fetch();
-
-
-    // if(count($fetch_data)>=1) 
-    // {
-    //     header("/merajobs/index.php");
-    // } else {
-    //     echo "invalid credentials";
-    // }
-   
     exit;
 }
 ?>
@@ -98,7 +86,7 @@ if(isset($_POST['username']))
                 <form method="POST" action="" autocomplete="off">
                     <div class="form-group">
                         <label for="username"><i class="fa fa-user"></i></label>
-                        <input type="username" name="username" id="username" placeholder="User Name"/>
+                        <input type="username" name="username" id="username" placeholder="User Name" autofocus/>
                     </div>
                     <div class="form-group">
                         <label for="password"><i class="fa fa-lock"></i></label>
